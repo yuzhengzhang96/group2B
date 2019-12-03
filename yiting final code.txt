@@ -1,0 +1,1255 @@
+﻿###############################################################
+> ####                                                       ####
+> ####   These are the variables and hyperparameters you     ####
+> ####   will need to set to run the program. Follow the     ####
+> ####   instructions given in the comments.                 ####
+> ####                                                       ####
+> ###############################################################
+> 
+> 
+> # set the working directory  - keep the quotation marks
+> setwd("C:/Users/metl032/Desktop/SImOut/SImOut")
+> 
+> # load data - insert the file name here in the form '[name].csv' - keep the quotation marks
+> data <- read.csv("Reviews.csv", header=TRUE)
+> 
+> # list the column where the text data lives in the form data$NAME (where [NAME] is the column name) - no quotation marks
+> myText = data$text
+> 
+> # set the columns names for the metadata - keep the quotation marks
+> myContinuousValue = 'rating'
+> 
+> # set the value - this is the hyperparameter that can be changed - much like with k-means clustering
+> k = 10
+> 
+> # insert any common words you would like the model to ignore here wrap them in quotation marks. If there are none leave blank
+> customStopWords = c()
+> 
+> ###############################################################
+> ####  End of variables section   ####
+> ###############################################################
+> 
+> 
+> 
+> ###############################################################
+> ####                                                       ####
+> ####   This part imports the relevant libraries.           ####
+> ####                                                       ####
+> ###############################################################
+> 
+> 
+> # import libraries. You will need to select a mirror (list of countries) from the GUI list
+> packages <- c("stm", "Rtsne", "geometry", "RColorBrewer", "tm", "wordcloud")
+> new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+> if(length(new.packages)) install.packages(new.packages)
+> 
+> library(stm)
+> library(Rtsne)
+> library(geometry)
+> library(RColorBrewer)
+> library(tm)
+> library(wordcloud)
+> 
+> ###############################################################
+> ####  End of libraries section   ####
+> ###############################################################
+> 
+> 
+> 
+> ###############################################################
+> ####                                                       ####
+> ####   This part cleans the data. See the slides from      ####
+> ####   Wednesday and Friday for more information.          ####
+> ####                                                       ####
+> ###############################################################
+> 
+> # stemming/stopwords/etc.
+> processed <- textProcessor(documents=myText, metadata = data, customstopwords = customStopWords, stem = FALSE, striphtml = TRUE)
+Building corpus... 
+Converting to Lower Case... 
+Removing punctuation... 
+Removing stopwords... 
+Removing numbers... 
+Creating Output... 
+> out <- prepDocuments(processed$documents, processed$vocab, processed$meta)
+Removing 10092 of 19212 terms (10092 of 418311 tokens) due to frequency 
+Your corpus now has 5608 documents, 9120 terms and 408219 tokens.> 
+> #output will have object meta, Abstract, and vocab
+> docs <- out$documents
+> vocab <- out$vocab
+> meta <-out$meta
+> 
+> ###############################################################
+> ####  End of data cleaning section         ####
+> ###############################################################
+> 
+> 
+> 
+> ###############################################################
+> ####                                                       ####
+> ####   This part builds the actual model. See the slides   ####
+> ####   from Friday for more information.                   ####
+> ####                                                       ####
+> ###############################################################
+> 
+> # build the model
+> result <- stm(docs, vocab, K = k, prevalence=~ s(eval(as.name(myContinuousValue))), init.type = "LDA", data=meta)
+Beginning LDA Initialization 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 1 (approx. per word bound = -6.918) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 2 (approx. per word bound = -6.916, relative change = 2.629e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 3 (approx. per word bound = -6.914, relative change = 2.145e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 4 (approx. per word bound = -6.913, relative change = 2.229e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 5 (approx. per word bound = -6.911, relative change = 2.460e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, get, box, now, just 
+ Topic 4: told, account, called, credit, back 
+ Topic 5: service, just, customer, can, company 
+ Topic 6: phone, service, number, broadband, home 
+ Topic 7: service, customer, issue, time, phone 
+ Topic 8: internet, service, bonnets, broadband, contract 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, service, modem, equipment 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 6 (approx. per word bound = -6.909, relative change = 2.738e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 7 (approx. per word bound = -6.907, relative change = 2.985e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 8 (approx. per word bound = -6.905, relative change = 3.134e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 9 (approx. per word bound = -6.903, relative change = 3.284e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 10 (approx. per word bound = -6.900, relative change = 3.402e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, get, box, now, channels 
+ Topic 4: told, account, called, back, asked 
+ Topic 5: just, company, service, customer, can 
+ Topic 6: phone, service, number, home, broadband 
+ Topic 7: service, customer, issue, time, phone 
+ Topic 8: internet, service, bonnets, broadband, contract 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, service, modem, equipment 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 11 (approx. per word bound = -6.898, relative change = 3.456e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 12 (approx. per word bound = -6.896, relative change = 3.463e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 13 (approx. per word bound = -6.893, relative change = 3.446e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 14 (approx. per word bound = -6.891, relative change = 3.428e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 15 (approx. per word bound = -6.889, relative change = 3.406e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, get, box, now, channels 
+ Topic 4: told, account, called, back, asked 
+ Topic 5: just, company, customer, can, service 
+ Topic 6: phone, service, number, home, broadband 
+ Topic 7: service, customer, issue, time, trying 
+ Topic 8: internet, service, bonnets, contract, broadband 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, service, equipment 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 16 (approx. per word bound = -6.886, relative change = 3.345e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 17 (approx. per word bound = -6.884, relative change = 3.243e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 18 (approx. per word bound = -6.882, relative change = 3.127e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 19 (approx. per word bound = -6.880, relative change = 3.032e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 20 (approx. per word bound = -6.878, relative change = 2.945e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, get, box, now, want 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: just, company, can, dont, customer 
+ Topic 6: phone, service, number, home, broadband 
+ Topic 7: service, customer, issue, time, trying 
+ Topic 8: internet, service, bonnets, contract, package 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, service, equipment 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 21 (approx. per word bound = -6.876, relative change = 2.849e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 22 (approx. per word bound = -6.874, relative change = 2.743e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 23 (approx. per word bound = -6.872, relative change = 2.629e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 24 (approx. per word bound = -6.870, relative change = 2.514e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 25 (approx. per word bound = -6.869, relative change = 2.402e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, get, box, now, channels 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: just, company, can, dont, get 
+ Topic 6: phone, service, number, home, hours 
+ Topic 7: customer, service, issue, time, different 
+ Topic 8: internet, service, contract, bonnets, package 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, service 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 26 (approx. per word bound = -6.867, relative change = 2.291e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 27 (approx. per word bound = -6.866, relative change = 2.185e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 28 (approx. per word bound = -6.864, relative change = 2.091e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 29 (approx. per word bound = -6.863, relative change = 2.003e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 30 (approx. per word bound = -6.862, relative change = 1.918e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, get, now, channels 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: just, company, get, can, dont 
+ Topic 6: phone, service, number, home, hours 
+ Topic 7: customer, issue, time, service, said 
+ Topic 8: internet, service, contract, package, speed 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, service 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 31 (approx. per word bound = -6.860, relative change = 1.844e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 32 (approx. per word bound = -6.859, relative change = 1.782e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 33 (approx. per word bound = -6.858, relative change = 1.733e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 34 (approx. per word bound = -6.857, relative change = 1.695e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 35 (approx. per word bound = -6.856, relative change = 1.664e-04) 
+Topic 1: said, called, call, tech, day 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, get, now, channels 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: just, company, get, can, dont 
+ Topic 6: phone, service, number, home, hours 
+ Topic 7: customer, issue, time, service, said 
+ Topic 8: internet, service, contract, package, speed 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, service 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 36 (approx. per word bound = -6.854, relative change = 1.636e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 37 (approx. per word bound = -6.853, relative change = 1.608e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 38 (approx. per word bound = -6.852, relative change = 1.577e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 39 (approx. per word bound = -6.851, relative change = 1.540e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 40 (approx. per word bound = -6.850, relative change = 1.498e-04) 
+Topic 1: called, said, tech, call, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, get, now, channels 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: just, get, company, can, dont 
+ Topic 6: phone, service, number, home, hours 
+ Topic 7: customer, time, issue, service, said 
+ Topic 8: internet, service, contract, package, speed 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, new 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 41 (approx. per word bound = -6.849, relative change = 1.451e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 42 (approx. per word bound = -6.848, relative change = 1.403e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 43 (approx. per word bound = -6.847, relative change = 1.355e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 44 (approx. per word bound = -6.846, relative change = 1.309e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 45 (approx. per word bound = -6.846, relative change = 1.265e-04) 
+Topic 1: called, said, tech, call, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, get, now, channels 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, number, home, hours 
+ Topic 7: customer, time, issue, different, service 
+ Topic 8: internet, service, contract, package, speed 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, new 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 46 (approx. per word bound = -6.845, relative change = 1.224e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 47 (approx. per word bound = -6.844, relative change = 1.186e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 48 (approx. per word bound = -6.843, relative change = 1.151e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 49 (approx. per word bound = -6.842, relative change = 1.119e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 50 (approx. per word bound = -6.842, relative change = 1.089e-04) 
+Topic 1: called, tech, said, call, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, get, channels, now 
+ Topic 4: told, called, account, back, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, number, home, call 
+ Topic 7: customer, time, issue, different, department 
+ Topic 8: internet, service, contract, package, speed 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, new 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 51 (approx. per word bound = -6.841, relative change = 1.061e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 52 (approx. per word bound = -6.840, relative change = 1.037e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 53 (approx. per word bound = -6.839, relative change = 1.015e-04) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 54 (approx. per word bound = -6.839, relative change = 9.952e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 55 (approx. per word bound = -6.838, relative change = 9.767e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, get, channels, now 
+ Topic 4: told, called, account, back, said 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, number, home, call 
+ Topic 7: customer, time, issue, different, department 
+ Topic 8: internet, service, contract, speed, package 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, new 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 56 (approx. per word bound = -6.837, relative change = 9.590e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 57 (approx. per word bound = -6.837, relative change = 9.406e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 58 (approx. per word bound = -6.836, relative change = 9.189e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 59 (approx. per word bound = -6.836, relative change = 8.950e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 60 (approx. per word bound = -6.835, relative change = 8.702e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, get, now 
+ Topic 4: told, called, account, back, said 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, number, call, home 
+ Topic 7: customer, time, issue, different, department 
+ Topic 8: internet, service, contract, speed, package 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, broadband, modem, equipment, new 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 61 (approx. per word bound = -6.834, relative change = 8.448e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 62 (approx. per word bound = -6.834, relative change = 8.204e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 63 (approx. per word bound = -6.833, relative change = 7.987e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 64 (approx. per word bound = -6.833, relative change = 7.780e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 65 (approx. per word bound = -6.832, relative change = 7.601e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, get, now 
+ Topic 4: told, called, account, back, said 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, number, call, home 
+ Topic 7: customer, time, issue, different, department 
+ Topic 8: internet, service, contract, speed, package 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: bonnets, modem, broadband, equipment, computer 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 66 (approx. per word bound = -6.832, relative change = 7.429e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 67 (approx. per word bound = -6.831, relative change = 7.273e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 68 (approx. per word bound = -6.831, relative change = 7.132e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 69 (approx. per word bound = -6.830, relative change = 7.021e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 70 (approx. per word bound = -6.830, relative change = 6.906e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, get, boxes 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, home 
+ Topic 7: customer, time, issue, different, department 
+ Topic 8: internet, service, contract, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, bonnets, broadband, equipment, computer 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 71 (approx. per word bound = -6.829, relative change = 6.790e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 72 (approx. per word bound = -6.829, relative change = 6.642e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 73 (approx. per word bound = -6.828, relative change = 6.473e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 74 (approx. per word bound = -6.828, relative change = 6.262e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 75 (approx. per word bound = -6.828, relative change = 6.063e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, different, department 
+ Topic 8: internet, service, contract, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, bonnets, broadband, equipment, computer 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 76 (approx. per word bound = -6.827, relative change = 5.879e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 77 (approx. per word bound = -6.827, relative change = 5.715e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 78 (approx. per word bound = -6.826, relative change = 5.567e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 79 (approx. per word bound = -6.826, relative change = 5.420e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 80 (approx. per word bound = -6.826, relative change = 5.243e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, different, department 
+ Topic 8: internet, service, contract, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, bonnets, broadband, equipment, computer 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 81 (approx. per word bound = -6.825, relative change = 5.074e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 82 (approx. per word bound = -6.825, relative change = 4.934e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 83 (approx. per word bound = -6.825, relative change = 4.810e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 84 (approx. per word bound = -6.824, relative change = 4.701e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 85 (approx. per word bound = -6.824, relative change = 4.595e-05) 
+Topic 1: called, tech, said, told, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, different, department 
+ Topic 8: internet, service, contract, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, bonnets, equipment, broadband, computer 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 86 (approx. per word bound = -6.824, relative change = 4.498e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 87 (approx. per word bound = -6.823, relative change = 4.404e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 88 (approx. per word bound = -6.823, relative change = 4.320e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 89 (approx. per word bound = -6.823, relative change = 4.232e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 90 (approx. per word bound = -6.823, relative change = 4.145e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, different, email 
+ Topic 8: internet, service, contract, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, equipment, bonnets, broadband, computer 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 91 (approx. per word bound = -6.822, relative change = 4.081e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 92 (approx. per word bound = -6.822, relative change = 4.024e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 93 (approx. per word bound = -6.822, relative change = 3.958e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 94 (approx. per word bound = -6.822, relative change = 3.886e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 95 (approx. per word bound = -6.821, relative change = 3.791e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, email, different 
+ Topic 8: internet, service, contract, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, equipment, bonnets, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 96 (approx. per word bound = -6.821, relative change = 3.693e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 97 (approx. per word bound = -6.821, relative change = 3.580e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 98 (approx. per word bound = -6.821, relative change = 3.484e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 99 (approx. per word bound = -6.820, relative change = 3.383e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 100 (approx. per word bound = -6.820, relative change = 3.297e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, email, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, equipment, internet, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 101 (approx. per word bound = -6.820, relative change = 3.213e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 102 (approx. per word bound = -6.820, relative change = 3.138e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 103 (approx. per word bound = -6.819, relative change = 3.069e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 104 (approx. per word bound = -6.819, relative change = 2.980e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 105 (approx. per word bound = -6.819, relative change = 2.916e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: cable, box, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, email, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, equipment, internet, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 106 (approx. per word bound = -6.819, relative change = 2.867e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 107 (approx. per word bound = -6.819, relative change = 2.826e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 108 (approx. per word bound = -6.818, relative change = 2.772e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 109 (approx. per word bound = -6.818, relative change = 2.745e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 110 (approx. per word bound = -6.818, relative change = 2.699e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: box, cable, channels, boxes, get 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, email, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 111 (approx. per word bound = -6.818, relative change = 2.682e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 112 (approx. per word bound = -6.818, relative change = 2.646e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 113 (approx. per word bound = -6.818, relative change = 2.626e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 114 (approx. per word bound = -6.817, relative change = 2.592e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 115 (approx. per word bound = -6.817, relative change = 2.543e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, back 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, time, email, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 116 (approx. per word bound = -6.817, relative change = 2.506e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 117 (approx. per word bound = -6.817, relative change = 2.464e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 118 (approx. per word bound = -6.817, relative change = 2.413e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 119 (approx. per word bound = -6.817, relative change = 2.364e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 120 (approx. per word bound = -6.816, relative change = 2.315e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, months, charge 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, time, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 121 (approx. per word bound = -6.816, relative change = 2.265e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 122 (approx. per word bound = -6.816, relative change = 2.208e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 123 (approx. per word bound = -6.816, relative change = 2.175e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 124 (approx. per word bound = -6.816, relative change = 2.150e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 125 (approx. per word bound = -6.816, relative change = 2.125e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, time, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 126 (approx. per word bound = -6.815, relative change = 2.087e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 127 (approx. per word bound = -6.815, relative change = 2.061e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 128 (approx. per word bound = -6.815, relative change = 2.020e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 129 (approx. per word bound = -6.815, relative change = 1.963e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 130 (approx. per word bound = -6.815, relative change = 1.927e-05) 
+Topic 1: called, tech, told, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, time, department 
+ Topic 8: internet, contract, service, speed, price 
+ Topic 9: bonnets, broadband, service, problem, customer 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 131 (approx. per word bound = -6.815, relative change = 1.894e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 132 (approx. per word bound = -6.815, relative change = 1.860e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 133 (approx. per word bound = -6.815, relative change = 1.808e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 134 (approx. per word bound = -6.814, relative change = 1.776e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 135 (approx. per word bound = -6.814, relative change = 1.740e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, time, department 
+ Topic 8: internet, contract, speed, service, price 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 136 (approx. per word bound = -6.814, relative change = 1.701e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 137 (approx. per word bound = -6.814, relative change = 1.662e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 138 (approx. per word bound = -6.814, relative change = 1.631e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 139 (approx. per word bound = -6.814, relative change = 1.604e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 140 (approx. per word bound = -6.814, relative change = 1.589e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, time, department 
+ Topic 8: internet, contract, speed, service, price 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, equipment, computer, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 141 (approx. per word bound = -6.814, relative change = 1.568e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 142 (approx. per word bound = -6.814, relative change = 1.559e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 143 (approx. per word bound = -6.813, relative change = 1.559e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 144 (approx. per word bound = -6.813, relative change = 1.552e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 145 (approx. per word bound = -6.813, relative change = 1.542e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, service, price 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, computer, equipment, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 146 (approx. per word bound = -6.813, relative change = 1.528e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 147 (approx. per word bound = -6.813, relative change = 1.504e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 148 (approx. per word bound = -6.813, relative change = 1.484e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 149 (approx. per word bound = -6.813, relative change = 1.460e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 150 (approx. per word bound = -6.813, relative change = 1.446e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, service, price 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, computer, home, equipment 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 151 (approx. per word bound = -6.813, relative change = 1.417e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 152 (approx. per word bound = -6.813, relative change = 1.398e-05) 
+....................................................................................................
+Completed E-Step (1 seconds). 
+Completed M-Step. 
+Completing Iteration 153 (approx. per word bound = -6.812, relative change = 1.372e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 154 (approx. per word bound = -6.812, relative change = 1.354e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 155 (approx. per word bound = -6.812, relative change = 1.332e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, price, service 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, computer, connection, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 156 (approx. per word bound = -6.812, relative change = 1.299e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 157 (approx. per word bound = -6.812, relative change = 1.283e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 158 (approx. per word bound = -6.812, relative change = 1.253e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 159 (approx. per word bound = -6.812, relative change = 1.232e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 160 (approx. per word bound = -6.812, relative change = 1.204e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, price, month 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, computer, connection, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 161 (approx. per word bound = -6.812, relative change = 1.190e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 162 (approx. per word bound = -6.812, relative change = 1.180e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 163 (approx. per word bound = -6.812, relative change = 1.170e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 164 (approx. per word bound = -6.812, relative change = 1.162e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 165 (approx. per word bound = -6.811, relative change = 1.143e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, price, month 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, connection, computer, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 166 (approx. per word bound = -6.811, relative change = 1.105e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 167 (approx. per word bound = -6.811, relative change = 1.120e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 168 (approx. per word bound = -6.811, relative change = 1.127e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 169 (approx. per word bound = -6.811, relative change = 1.162e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 170 (approx. per word bound = -6.811, relative change = 1.174e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, called, account, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, price, month 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, connection, computer, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 171 (approx. per word bound = -6.811, relative change = 1.156e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 172 (approx. per word bound = -6.811, relative change = 1.103e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 173 (approx. per word bound = -6.811, relative change = 1.063e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 174 (approx. per word bound = -6.811, relative change = 1.033e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 175 (approx. per word bound = -6.811, relative change = 1.033e-05) 
+Topic 1: called, told, tech, said, technician 
+ Topic 2: bill, month, pay, charge, months 
+ Topic 3: box, cable, channels, boxes, dvr 
+ Topic 4: told, account, called, said, asked 
+ Topic 5: get, just, company, can, dont 
+ Topic 6: phone, service, call, number, hours 
+ Topic 7: customer, issue, email, department, time 
+ Topic 8: internet, contract, speed, month, price 
+ Topic 9: bonnets, broadband, service, customer, problem 
+ Topic 10: modem, internet, connection, computer, home 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 176 (approx. per word bound = -6.811, relative change = 1.025e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Completing Iteration 177 (approx. per word bound = -6.811, relative change = 1.013e-05) 
+....................................................................................................
+Completed E-Step (0 seconds). 
+Completed M-Step. 
+Model Converged 
+> 
+> #display model results
+> plot(result)
+> labelTopics(result, topics = NULL, n = 7, frexweight = 0.5)
+Topic 1 Top Words:
+         Highest Prob: called, told, tech, said, technician, come, cable 
+         FREX: appointment, schedule, wires, reschedule, wednesday, pole, yard 
+         Lift: --xfinity, -am, -show, againso, alvin, angrily, atts 
+         Score: appointment, tech, technician, scheduled, said, come, called 
+Topic 2 Top Words:
+         Highest Prob: bill, month, pay, charge, months, charged, paid 
+         FREX: bill, charges, charged, bills, cycle, fee, taxes 
+         Lift: -charging, aged, chargei, charlotte, circumstance, continuation, counts 
+         Score: bill, month, fees, charges, fee, charged, payment 
+Topic 3 Top Words:
+         Highest Prob: box, cable, channels, boxes, dvr, digital, watch 
+         FREX: channels, boxes, dvr, digital, channel, picture, converter 
+         Lift: bells, blurry, boxi, breast, bug, captioning, cartoon 
+         Score: box, channels, boxes, dvr, channel, digital, watch 
+Topic 4 Top Words:
+         Highest Prob: told, account, called, said, asked, back, credit 
+         FREX: refund, collections, account, collection, agency, rebate, card 
+         Lift: -laws, -pack, “oh, ach, adamantly, affidavit, agencyi 
+         Score: account, credit, payment, refund, collection, bank, said 
+Topic 5 Top Words:
+         Highest Prob: get, just, company, can, dont, will, like 
+         FREX: worst, horrible, really, dont, pretty, people, ive 
+         Lift: shes, youll, ahold, antics, arduous, arm, ass 
+         Score: dont, worst, cant, company, just, money, like 
+Topic 6 Top Words:
+         Highest Prob: phone, service, call, number, hours, back, minutes 
+         FREX: cell, hold, phone, minutes, ported, number, alarm 
+         Lift: calmed, erected, explicitly, holy, hwy, jonathan, miscoded 
+         Score: number, phone, call, hours, hold, minutes, cell 
+Topic 7 Top Words:
+         Highest Prob: customer, issue, email, department, time, resolved, able 
+         FREX: resolve, email, issue, department, resolved, agents, resolution 
+         Lift: outlined, readers, supportthe, alerts, alfonso, alter, assigned 
+         Score: email, issue, department, ticket, resolve, resolved, customer 
+Topic 8 Top Words:
+         Highest Prob: internet, contract, speed, month, price, year, package 
+         FREX: speed, mbps, speeds, prices, rates, download, blast 
+         Lift: -mbps, abide, after, ala, angle, antiquated, antivirus 
+         Score: speed, mbps, contract, price, speeds, rate, internet 
+Topic 9 Top Words:
+         Highest Prob: bonnets, broadband, service, customer, problem, services, since 
+         FREX: broadband, bonnets, poor, florida, provider, continue, continues 
+         Lift: actively, beneficial, everett, formally, plead, re-activated, relocating 
+         Score: bonnets, broadband, service, problem, customer, services, customers 
+Topic 10 Top Words:
+         Highest Prob: modem, internet, connection, computer, home, router, equipment 
+         FREX: computers, router, modem, docsis, mac, gateway, server 
+         Lift: abandoned, accidents, accomplishing, adversely, aforementioned, ages, annoyance 
+         Score: modem, router, connection, internet, property, network, computer 
+> 
+> ###############################################################
+> ####  End of model build section            ####
+> ###############################################################
+> 
+> 
+> 
+> ###############################################################
+> ####                                                       ####
+> ####   This part builds the visualisation (tagclouds).     ####
+> ####   See the slides from Thursday for more information.  ####
+> ####                                                       ####
+> ###############################################################
+> 
+> # make wordclouds
+> pdf("topic_cloud.pdf")
+> for (i in 1:k){
++   cloud(result, topic = i, max.words = 50, random.color = TRUE, colors = brewer.pal(6,"Dark2"))
++   title(paste("Topic ", i))
++ }
+> dev.off() 
+jpeg 
+   2 
+> 
+> regress <- estimateEffect(c(1:k) ~ s(rating), result, metadata = meta)
+Warning message:
+In estimateEffect(c(1:k) ~ s(rating), result, metadata = meta) :
+  Covariate matrix is singular.  See the details of ?estimateEffect() for some common causes.
+             Adding a small prior 1e-5 for numerical stability.
+> 
+> # print a regression of topic to sentiment
+> for (i in c(1:k)) {  
++   x = i
++   title = paste("trend_topic_",x,".jpg", sep="")
++   jpeg(title)
++   plot(regress, "rating", method = "continuous", topics = x, model = result, ci.level = 0, printlegend = FALSE, xlab = "rating")
++   dev.off()
++ }
+> 
+> #end
+> 
+> head(data)
